@@ -1,0 +1,15 @@
+[package]
+name = "afwaveplot"
+version = "0.1.0"
+edition = "2018"
+description = "Functions to generate audio waveforms for display purposes"
+authors = ["Eduard Müller <mail@emuell.net>"]
+exclude = ["assets", "examples"]
+categories = ["audio", "visualization", "waveform"]
+
+[dev-dependencies]
+svg = { version = "0.10.0" }
+hound = { version = "3.5.0" }
+
+[[example]]
+name = "svg-waveform"
