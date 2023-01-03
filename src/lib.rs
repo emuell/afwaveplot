@@ -124,11 +124,12 @@ pub mod mixed_down {
         // downscale
         else {
             let step_size = frame_count as f32 / resolution as f32;
-            for index in 0..resolution {
+            for res_index in 0..resolution {
                 let mut min = f32::MAX;
                 let mut max = f32::MIN;
-                let slice_start = (index as f32 * step_size) as usize;
-                let slice_end = (((index + 1) as f32 * step_size) as usize).min(buffer.len());
+                let slice_start = (res_index as f32 * step_size) as usize * channel_count;
+                let slice_end = (((res_index + 1) as f32 * step_size) as usize * channel_count)
+                    .min(buffer.len());
                 let slice = &buffer[slice_start..slice_end];
                 for frame in slice.chunks_exact(channel_count) {
                     let mono_value = frame
@@ -139,7 +140,9 @@ pub mod mixed_down {
                     max = max.max(mono_value);
                 }
                 waveform.push(WaveformPoint {
-                    time: Duration::from_secs_f32(slice_start as f32 / samples_per_sec as f32),
+                    time: Duration::from_secs_f32(
+                        slice_start as f32 / channel_count as f32 / samples_per_sec as f32,
+                    ),
                     min,
                     max,
                 });
@@ -186,11 +189,12 @@ pub mod multi_channel {
         // downscale
         else {
             let step_size = frame_count as f32 / resolution as f32;
-            for index in 0..resolution {
+            for res_index in 0..resolution {
                 let mut min = vec![f32::MAX; channel_count];
                 let mut max = vec![f32::MIN; channel_count];
-                let slice_start = (index as f32 * step_size) as usize;
-                let slice_end = (((index + 1) as f32 * step_size) as usize).min(buffer.len());
+                let slice_start = (res_index as f32 * step_size) as usize * channel_count;
+                let slice_end = (((res_index + 1) as f32 * step_size) as usize * channel_count)
+                    .min(buffer.len());
                 let slice = &buffer[slice_start..slice_end];
                 for frame in slice.chunks_exact(channel_count) {
                     for (channel_index, value) in frame.iter().enumerate() {
@@ -198,7 +202,9 @@ pub mod multi_channel {
                         max[channel_index] = max[channel_index].max(*value);
                     }
                 }
-                let time = Duration::from_secs_f32(slice_start as f32 / samples_per_sec as f32);
+                let time = Duration::from_secs_f32(
+                    slice_start as f32 / channel_count as f32 / samples_per_sec as f32,
+                );
                 for channel_index in 0..channel_count {
                     waveform[channel_index].push(WaveformPoint {
                         time,
@@ -228,7 +234,7 @@ mod tests {
             (buffer, specs)
         };
 
-        let (long_file_buffer, long_file_specs) = read_file("assets/BSQ_M14.wav");
+        let (long_file_buffer, long_file_specs) = read_file("assets/YuaiLoop.wav");
         let (small_file_buffer, small_file_specs) = read_file("assets/AKWF_saw.wav");
 
         // downscale
